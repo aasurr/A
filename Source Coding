@@ -1,0 +1,67 @@
+Source Coding
+
+clc;
+clear;
+close all;
+
+% Number of symbols
+m = input('Enter the number of Symbols: ');
+
+% Probabilities (must sum to 1)
+p = input('Enter the Probability of Symbols as a vector: ');
+
+% Sort probabilities and symbols
+[p, idx] = sort(p, 'descend');
+symbols = 1:m;
+symbols = symbols(idx);
+
+disp('Sorted Probabilities:');
+disp(p);
+
+% Create Huffman dictionary
+[dict, avglen] = huffmandict(symbols, p);
+
+fprintf('Average length of code: %.4f\n\n', avglen);
+
+% Display dictionary
+fprintf('Huffman Dictionary:\n');
+for i = 1:m
+    codeStr = sprintf('%d', dict{i,2});
+    fprintf('Symbol: %d\tCode: %s\n', dict{i,1}, codeStr);
+    
+end
+
+% Input signal vector (symbols)
+input_sig = input('Enter input signal (vector of symbols): ');
+
+% Encode signal
+encoded_sig = huffmanenco(input_sig, dict);
+disp('Encoded Signal:');
+disp(encoded_sig);
+
+% Decode encoded signal
+decoded_sig = huffmandeco(encoded_sig, dict);
+disp('Decoded Signal:');
+disp(decoded_sig);
+
+% Check if encoding and decoding are correct
+if isequal(input_sig, decoded_sig)
+    disp('Received data is Correct');
+else
+    disp('Received data is Incorrect');
+end
+
+
+
+
+
+
+
+
+% Entropy calculation
+Hx = sum(p .* log2(1 ./ p));
+fprintf('Entropy: %.4f\n', Hx);
+
+% Efficiency calculation
+efficiency = (Hx / avglen) * 100;
+fprintf('Efficiency: %.2f%%\n', efficiency);
