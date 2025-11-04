@@ -1,0 +1,58 @@
+QAM
+clc;
+clear all;
+close all;
+
+M_Values = [4, 8, 32, 64]; % M-ary QAM values
+EbN0_dB = 0:0.5:10;        % Eb/N0 range in dB
+N = 1e5;                   % Number of bits
+
+% Plot constellation diagrams for each modulation order
+for idx = 1:length(M_Values)
+    M = M_Values(idx);           % Modulation order
+    data = 0:M-1;                % Generate all possible symbols
+    txSig = qammod(data, M);     % QAM modulation of the symbols
+    figure;                      % New figure for each constellation
+    scatterplot(txSig);
+    title([num2str(M) '-QAM Constellation Diagram']);
+    grid on;
+end
+
+figure; % New figure for BER plots
+
+for idx = 1:length(M_Values)
+    M = M_Values(idx);
+    k = log2(M);                          % Bits per symbol
+    numSymbols = floor(N / k);            % Integer number of symbols
+    data = randi([0 M-1], numSymbols, 1);% Random symbols
+    
+    tx = qammod(data, M);                 % QAM modulation
+    
+    ber_sim = zeros(size(EbN0_dB));      % Preallocate BER array
+    
+    for i = 1:length(EbN0_dB)
+        EbN0 = EbN0_dB(i);
+        snr = EbN0 + 10*log10(k);        % Convert Eb/N0 to SNR per symbol (dB)
+        
+        rx = awgn(tx, snr, 'measured'); % Add AWGN noise
+        
+        data_hat = qamdemod(rx, M);      % Demodulate
+        
+        % Calculate BER
+        ber_sim(i) = sum(data ~= data_hat) / numSymbols;
+    end
+    
+    % Theoretical BER for M-QAM (non-differential)
+    ber_theory = berawgn(EbN0_dB, 'qam', M, 'nondiff');
+    
+    % Plot simulated and theoretical BER
+    semilogy(EbN0_dB, ber_sim, 'o-', 'DisplayName', [num2str(M) '-QAM Sim']);
+    hold on;
+    semilogy(EbN0_dB, ber_theory, '--', 'DisplayName', [num2str(M) '-QAM Theory']);
+end
+
+grid on;
+xlabel('Eb/N0 (dB)');
+ylabel('Bit Error Rate (BER)');
+title('Performance of M-ary QAM over AWGN Channel');
+legend('Location', 'southwest');
