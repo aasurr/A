@@ -1,0 +1,60 @@
+Linear Block Code
+Program:
+clc;
+clear;
+close all;
+
+n=input('Enter value of n:');
+k=input('Enter value of k:');
+p=input('Enter parity matrix');
+
+%identity matrix 
+i=eye(k);
+disp('Identity Matrix');
+disp(i);
+
+q=n-k;
+disp('Total number of check bits:');
+disp(q);
+
+x=0:1:2^k-1;
+m=[de2bi(x,k,'left-msb')];
+disp('Message Vectors');
+disp(m);
+g=[i p];
+disp('Generator Matrix');
+disp(g);
+s=m*g;
+s1=rem(s,2);
+disp('Code Words');
+disp(s1);
+
+% Decoding of linear bloack coding
+r=input('Enter the receiver code word ');
+pt=transpose(p);
+b = eye(q);
+h=[pt b];
+disp('Parity Check Matrix: ');
+disp(h);
+ht = transpose(h);
+disp('Transpose of Parity Check Matrix: ');
+disp(ht);
+d = (r*ht);
+s2 =rem(d,2);
+disp('Syndrome Vector');
+disp(s2);
+e =eye(n);
+disp('Error Matrix');
+disp(e);
+if(s2==0)
+    disp('Codeword is correct :');
+else
+    for i = 1:n
+        if(s2 == ht(i,:))
+            c = xor(r,e(i,:));
+            disp('Corrected Codeword :');
+            disp(c)
+        end
+    end
+end
+
